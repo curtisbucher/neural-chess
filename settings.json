@@ -1,0 +1,52 @@
+{
+    "editor.rulers": [
+        80,
+        100
+    ],
+    "editor.formatOnSaveTimeout": 1000,
+    "editor.suggestSelection": "first",
+    "explorer.confirmDelete": false,
+    "files.autoSave": "onFocusChange",
+    "git.autofetch": true,
+    "git.enableSmartCommit": true,
+    "python.jediEnabled": false,
+    "python.linting.enabled": true,
+    "python.linting.mypyEnabled": true,
+    "python.pythonPath": "/Users/curtisbucher/.pyenv/shims/python",
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+    "files.trimTrailingWhitespace": true,
+    "python.languageServer": "Pylance",
+    "editor.fontWeight": null,
+    "python.formatting.provider": "autopep8",
+    "jupyter.sendSelectionToInteractiveWindow": true,
+    "jupyter.runStartupCommands": ["%config IPCompleter.use_jedi = false"],
+    "explorer.confirmDragAndDrop": false,
+    "workbench.editorAssociations": {
+        "*.ipynb": "jupyter-notebook"
+    },
+    "mssql.connections": [
+        {
+            "server": "{{put-server-name-here}}",
+            "database": "{{put-database-name-here}}",
+            "user": "{{put-username-here}}",
+            "password": ""
+        }
+    ],
+    "python.defaultInterpreterPath": "/Users/curtisbucher/.pyenv/shims/python",
+    "editor.inlineSuggest.enabled": true,
+    "notebook.cellToolbarLocation": {
+        "default": "right",
+        "jupyter-notebook": "left"
+    },
+    "github.copilot.enable": {
+        "*": false,
+        "yaml": false,
+        "plaintext": false,
+        "markdown": false,
+        "python": false
+    },
+    "leetcode.hint.configWebviewMarkdown": false,
+    "leetcode.workspaceFolder": "/Users/curtisbucher/Desktop/Programs/LeetCode",
+    "leetcode.defaultLanguage": "python3",
+    "window.zoomLevel": 1,
+}
