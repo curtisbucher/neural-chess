@@ -2,20 +2,21 @@
 import sys
 sys.path.append('../../neural-chess')
 
-# Setup plotting
-import matplotlib.pyplot as plt
-plt.style.use('seaborn-whitegrid')
-# Set Matplotlib defaults
-plt.rc('figure', autolayout=True)
-plt.rc('axes', labelweight='bold', labelsize='large',
-       titleweight='bold', titlesize=18, titlepad=10)
-
 # Various imports
 import numpy as np
 from tensorflow import keras
 from keras import layers
 
 from data.loader import *
+
+# Setup plotting
+import matplotlib.pyplot as plt
+
+# Set Matplotlib defaults
+plt.style.use('seaborn-whitegrid')
+plt.rc('figure', autolayout=True)
+plt.rc('axes', labelweight='bold', labelsize='large',
+       titleweight='bold', titlesize=18, titlepad=10)
 
 ## Defining constants
 TRAIN_AUTOENCODER = 0
@@ -200,14 +201,11 @@ Pos2Vec_4 = keras.Sequential([
     layer_2,
 ])
 
-
-
 # Compiling model
 Pos2Vec_4.compile(
     optimizer=p2v_decay_optimizer,
     loss='mean_squared_error',
 )
-
 
 print("Training")
 history = Pos2Vec_4.fit(
@@ -218,7 +216,6 @@ history = Pos2Vec_4.fit(
     callbacks=[early_stopping],
     verbose=1,
 )
-
 
 # Training the 400 node layer
 layer_7 = Pos2Vec_4.layers[3] # 400 - 200nodes
