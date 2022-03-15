@@ -1,14 +1,16 @@
+# For reletive imports
 import numpy as np
 import pickle
 import random
-from util import *
+from data.util import *
 
+pickle_folder = '../../neural-chess/data/pGames/volume'
 def getTest(input_size, start, finish):
 	test = []
 	test_l = []
 
 	for i in range(start, finish):
-		name = 'pGames/volume' + str(i) + '.p'
+		name = pickle_folder  + str(i) + '.p'
 
 		t = open(name, mode='rb')
 		cur_dict = pickle.load(t, encoding="latin1")
@@ -37,7 +39,7 @@ def getTrain(input_size, total, volume_size):
 	for i in range(total // volume_size):
 		print("Loading batch number " + str(i))
 
-		f = open('pGames/volume' + str(i) + '.p', mode="rb")
+		f = open(pickle_folder  + str(i) + '.p', mode="rb")
 		full_data = pickle.load(f, encoding="latin1")
 
 		curX = full_data['x']
