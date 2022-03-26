@@ -1,9 +1,13 @@
 # Various imports
+from matplotlib import blocking_input
 import numpy as np
 from tensorflow import keras
 from keras import layers
 from keras.layers import concatenate
 
+# For reletive imports
+import sys
+sys.path.append('../../neural-chess')
 from data.loader import *
 
 # Setup plotting
@@ -33,8 +37,8 @@ TRAIN_TEST_RATIO = 0.1
 
 BS_AE = 20
 BS_MLP = 50
-EPOCHS_AE = 50
-EPOCHS_MLP = 201
+EPOCHS_AE = 1 #5
+EPOCHS_MLP = 15 #201
 RATE_AE = 0.005
 DECAY_AE = 0.98
 RATE_MLP = 0.005
@@ -56,34 +60,49 @@ N_OUT = 2
 
 VOLUME_SIZE = 25000
 
+SEED = 0
+
 export_path = '../model'
 
 def gen_pos_to_vec( training_data: Tuple[npt.NDArray, npt.NDArray],
                     train_size: int = TOTAL_AE,
-                    train_test_ratio: float = TRAIN_TEST_RATIO,
-
+                    validation_split: float = TRAIN_TEST_RATIO,
+                    batch_size: int = BS_AE,
+                    epochs: int= EPOCHS_AE,
+                    opt_init_rate: float = RATE_AE,
+                    opt_decay_rate: float = DECAY_AE,
                     structure: typing.List[int]=[ENCODING_1, ENCODING_2, ENCODING_3, ENCODING_4],
                     ) -> keras.Model:
     '''
         Generates board autoencoders for siamese input into neural-chess network
-        Parameters: TODO
+        Parameters:
             training_data : A tuple of training data (whiteWins, Blackwins)
+            train_size : The number of training examples to use
+            validation_split : The percentage of the training data to use for validation
+            batch_size : The number of examples to use per batch
+            epochs : The number of epochs to train for
+            opt_init_rate : The initial learning rate for the optimizer
+            opt_decay_rate : The decay rate for the learning rate
+            structure : The structure of the autoencoder
+
+        Returns:
+            model : The autoencoder model
     '''
 
     whiteWins, blackWins = training_data
 
-    sample_size = 10000
     # Defining a decaying learning rate
     p2v_schedule = keras.optimizers.schedules.ExponentialDecay(
-        initial_learning_rate=RATE_AE,
-        decay_steps= sample_size / 200,
-        decay_rate=DECAY_AE,
+        initial_learning_rate=opt_init_rate,
+        decay_steps= train_size / 200,
+        decay_rate=opt_decay_rate,
         name="p2v_schedule")
     p2v_decay_optimizer = keras.optimizers.SGD(learning_rate=p2v_schedule)
+    optimizer = "adam"
 
     # Defining a short circuiting early stopping function
     early_stopping = keras.callbacks.EarlyStopping(
-        patience=500,
+        patience=10,
         min_delta=0.0001,
         restore_best_weights=True,
     )
@@ -97,34 +116,26 @@ def gen_pos_to_vec( training_data: Tuple[npt.NDArray, npt.NDArray],
 
     # Compiling model
     Pos2Vec.compile(
-        optimizer=p2v_decay_optimizer,
+        optimizer=optimizer,
         loss='mean_squared_error',
     )
 
-
     # whiteWins, blackWins
     print("Generating random train")
-    sample_size = 10000#1000000
-    test_size= 1000#1000
-    white_sample = whiteWins[np.random.randint(whiteWins.shape[0], size=sample_size), :]
-    black_sample = blackWins[np.random.randint(blackWins.shape[0], size=sample_size), :]
-
-    white_test = whiteWins[np.random.randint(whiteWins.shape[0], size=test_size), :]
-    black_test = blackWins[np.random.randint(blackWins.shape[0], size=test_size), :]
+    white_sample = whiteWins[np.random.randint(whiteWins.shape[0], size=train_size), :]
+    black_sample = blackWins[np.random.randint(blackWins.shape[0], size=train_size), :]
 
     autoencoder_train = np.concatenate([white_sample, black_sample])
-    autoencoder_test = np.concatenate([white_test, black_test])
 
     print("Training")
     history = Pos2Vec.fit(
         autoencoder_train, autoencoder_train,
-        validation_data=(autoencoder_test, autoencoder_test),
-        batch_size=None,
-        epochs=10, #200
+        validation_split=validation_split,
+        batch_size=batch_size,
+        epochs=epochs, #200
         callbacks=[early_stopping],
         verbose=1,
     )
-
 
     # Training the 400 node layer
     layer_1 = Pos2Vec.layers[0] # 769 - 600nodes
@@ -136,24 +147,23 @@ def gen_pos_to_vec( training_data: Tuple[npt.NDArray, npt.NDArray],
     Pos2Vec_2 = keras.Sequential([
         # layers.Dense(769, activation='relu', input_shape=input_shape),
         layer_1,
-        layers.Dense(ENCODING_2, activation='relu'),
-        layers.Dense(ENCODING_1, activation='relu'),
+        layers.Dense(structure[1], activation='relu'),
+        layers.Dense(structure[0], activation='relu'),
         layer_2,
     ])
 
     # Compiling model
     Pos2Vec_2.compile(
-        optimizer=p2v_decay_optimizer,
+        optimizer=optimizer,
         loss='mean_squared_error',
     )
-
 
     print("Training")
     history = Pos2Vec_2.fit(
         autoencoder_train, autoencoder_train,
-        validation_data=(autoencoder_test, autoencoder_test),
+        validation_split=validation_split,
         batch_size=None,
-        epochs=10, #200
+        epochs=epochs, #200
         callbacks=[early_stopping],
         verbose=1,
     )
@@ -170,8 +180,8 @@ def gen_pos_to_vec( training_data: Tuple[npt.NDArray, npt.NDArray],
         # layers.Dense(769, activation='relu', input_shape=input_shape),
         layer_1,
         layer_3,
-        layers.Dense(ENCODING_3, activation='relu'),
-        layers.Dense(ENCODING_2, activation='relu'),
+        layers.Dense(structure[2], activation='relu'),
+        layers.Dense(structure[1], activation='relu'),
         layer_4,
         layer_2,
     ])
@@ -179,7 +189,7 @@ def gen_pos_to_vec( training_data: Tuple[npt.NDArray, npt.NDArray],
 
     # Compiling model
     Pos2Vec_3.compile(
-        optimizer=p2v_decay_optimizer,
+        optimizer=optimizer,
         loss='mean_squared_error',
     )
 
@@ -187,9 +197,9 @@ def gen_pos_to_vec( training_data: Tuple[npt.NDArray, npt.NDArray],
     print("Training")
     history = Pos2Vec_3.fit(
         autoencoder_train, autoencoder_train,
-        validation_data=(autoencoder_test, autoencoder_test),
+        validation_split=validation_split,
         batch_size=None,
-        epochs=10, #200
+        epochs=epochs, #200
         callbacks=[early_stopping],
         verbose=1,
     )
@@ -207,8 +217,8 @@ def gen_pos_to_vec( training_data: Tuple[npt.NDArray, npt.NDArray],
         layer_1,
         layer_3,
         layer_5,
-        layers.Dense(ENCODING_4, activation='relu'),
-        layers.Dense(ENCODING_3, activation='relu'),
+        layers.Dense(structure[3], activation='relu'),
+        layers.Dense(structure[2], activation='relu'),
         layer_6,
         layer_4,
         layer_2,
@@ -216,16 +226,16 @@ def gen_pos_to_vec( training_data: Tuple[npt.NDArray, npt.NDArray],
 
     # Compiling model
     Pos2Vec_4.compile(
-        optimizer=p2v_decay_optimizer,
+        optimizer=optimizer,
         loss='mean_squared_error',
     )
 
     print("Training")
     history = Pos2Vec_4.fit(
         autoencoder_train, autoencoder_train,
-        validation_data=(autoencoder_test, autoencoder_test),
+        validation_split=validation_split,
         batch_size=None,
-        epochs=10, #200
+        epochs=epochs, #200
         callbacks=[early_stopping],
         verbose=1,
     )
@@ -245,49 +255,88 @@ def gen_pos_to_vec( training_data: Tuple[npt.NDArray, npt.NDArray],
         layer_7,
     ])
 
+    layer_1.trainable = True
+    layer_3.trainable = True
+    layer_5.trainable = True
+    layer_7.trainable = True
+
+    # Pos2Vec_A.compile()
+
     return Pos2Vec_A
 
-def gen_neural_chess( training_data: Tuple[npt.NDArray, npt.NDArray],
-                      train_size: int = TOTAL_MLP,
-                      train_test_ratio: float = TRAIN_TEST_RATIO,
-                      structure: typing.List[int]=[HIDDEN_1, HIDDEN_2, HIDDEN_3, HIDDEN_4],
+def gen_neural_chess(   training_data: Tuple[npt.NDArray, npt.NDArray],
+                        train_size: int = TOTAL_MLP,
+                        validation_split: float = TRAIN_TEST_RATIO,
+                        batch_size: int = BS_MLP,
+                        epochs: int= EPOCHS_MLP,
+                        opt_init_rate: float = RATE_MLP,
+                        opt_decay_rate: float = DECAY_MLP,
+                        structure: typing.List[int]=[HIDDEN_1, HIDDEN_2, HIDDEN_3, HIDDEN_4],
                     ) -> keras.Model:
     '''
         Generates and trains the deepchess network
+        Parameters:
+            training_data: Tuple[npt.NDArray, npt.NDArray] - The training data
+            train_size: int - The size of the training data
+            validation_split: float - The percentage of the training data to be used for validation
+            batch_size: int - The batch size
+            epochs: int - The number of epochs
+            opt_init_rate: float - The initial learning rate
+            opt_decay_rate: float - The decay rate
+            structure: List[int] - The structure of the network
+        Returns:
+            keras.Model - The trained deepchess network
+            history: keras.callbacks.History - The history of the training
     '''
     whiteWins, blackWins = training_data
+    Pos2Vec: keras.Model = keras.models.load_model("../model/Pos2Vec")
 
-    Pos2Vec_A: keras.Model = gen_pos_to_vec(training_data)
+    A_in = keras.layers.Input(shape=(769,))
+    B_in = keras.layers.Input(shape=(769,))
 
-    # Duplicating siamese Pos2Vec with tied weights
-    la0, la1, la2, la3 = Pos2Vec_A.layers
-    Pos2Vec_B_in = keras.layers.Input(shape=(769,))
-    lc0 = la0(Pos2Vec_B_in)
-    lc1 = la1(lc0)
-    lc2 = la2(lc1)
-    lc2 = la3(lc2)
+    l0 = layers.Dense(600, activation='relu')
+    l1 = layers.Dense(400, activation='relu')
+    l2 = layers.Dense(200, activation='relu')
+    l3 = layers.Dense(100, activation='relu')
 
-    Pos2Vec_B = keras.Model(inputs=Pos2Vec_B_in, outputs=lc2)
+    A = l3(l2(l1(l0(A_in))))
+    B = l3(l2(l1(l0(B_in))))
+
+    Pos2Vec_A = keras.models.Model(inputs=A_in, outputs=A)
+    Pos2Vec_A.set_weights(Pos2Vec.get_weights())
+
+    Pos2Vec_B = keras.models.Model(inputs=B_in, outputs=B)
+    Pos2Vec_B.set_weights(Pos2Vec.get_weights())
+
+    test_size = int(train_size * validation_split)
+    # # Duplicating siamese Pos2Vec with tied weights
+    # la0, la1, la2, la3 = Pos2Vec_A.layers
+
+    # Pos2Vec_B_in = keras.layers.Input(shape=(769,))
+    # lb0 = la0(Pos2Vec_B_in)
+    # lb1 = la1(lb0)
+    # lb2 = la2(lb1)
+    # lb3 = la3(lb2)
+
+    # Pos2Vec_B = keras.Model(inputs=Pos2Vec_B_in, outputs=lb3)
+
+    # Pos2Vec_A.summary()
+    # Pos2Vec_B.summary()
 
     # Creating DeepChess layers to compare pos2vec
     twin_p2v_in = concatenate([Pos2Vec_A.output, Pos2Vec_B.output])
-    l0 = layers.Dense(HIDDEN_2, activation="relu")(twin_p2v_in)
-    l1 = layers.Dense(HIDDEN_3, activation="relu")(l0)
-    l2 = layers.Dense(HIDDEN_4, activation="relu")(l1)
-    deepchess_out = layers.Dense(N_OUT, activation="relu")(l2)
+    l0 = layers.Dense(structure[1], activation="relu")(twin_p2v_in)
+    l1 = layers.Dense(structure[2], activation="relu")(l0)
+    l2 = layers.Dense(structure[3], activation="relu")(l1)
+    l3 = layers.Dense(N_OUT)(l2)
+    deepchess_out = layers.Softmax()(l3)
 
     DeepChess = keras.Model(
         inputs=[Pos2Vec_A.input, Pos2Vec_B.input],
         outputs=[deepchess_out])
 
-    plot_model(DeepChess,
-                show_shapes=True)
-
-
     # whiteWins, blackWins
     print("Generating random sample")
-    train_size = 10000#1000000
-    test_size= 1000#100000
 
     ## Generating training data
     # sampling white wins and losses (black wins)
@@ -296,37 +345,52 @@ def gen_neural_chess( training_data: Tuple[npt.NDArray, npt.NDArray],
 
     # Creating (W, L) or (L, W) pairs
     DeepChess_in_A = np.concatenate((white_w_train[:train_size // 2], white_l_train[:train_size // 2]))
+    np.random.seed(seed=SEED)
+    np.random.shuffle(DeepChess_in_A)
+
     DeepChess_in_B = np.concatenate((white_l_train[train_size // 2:], white_w_train[train_size // 2:]))
+    np.random.seed(seed=SEED)
+    np.random.shuffle(DeepChess_in_B)
 
     # Creating (1, 0) or (0, 1) pairs corresponding to input
     DeepChess_out = np.array([(1,0)] * (train_size // 2) +
                                 [(0,1)] * (train_size // 2))
-
+    np.random.seed(seed=SEED)
+    np.random.shuffle(DeepChess_out)
 
     ## Generating testing data
-    # test white wins and losses (black wins)
-    white_w_test= whiteWins[np.random.randint(whiteWins.shape[0], size=test_size), :]
-    white_l_test= blackWins[np.random.randint(blackWins.shape[0], size=test_size), :]
+    # sampling white wins and losses (black wins)
+    white_w_test = whiteWins[np.random.randint(whiteWins.shape[0], size=test_size), :]
+    white_l_test = blackWins[np.random.randint(blackWins.shape[0], size=test_size), :]
 
     # Creating (W, L) or (L, W) pairs
-    DeepChess_test_in_A = np.concatenate((white_w_test[:test_size // 2], white_l_test[:test_size // 2]))
-    DeepChess_test_in_B = np.concatenate((white_l_test[test_size // 2:], white_w_test[test_size // 2:]))
+    DeepChess_test_A = np.concatenate((white_w_test[:test_size // 2], white_l_test[:test_size // 2]))
+    np.random.seed(seed=SEED)
+    np.random.shuffle(DeepChess_test_A)
+
+    DeepChess_test_B = np.concatenate((white_l_test[test_size // 2:], white_w_test[test_size // 2:]))
+    np.random.seed(seed=SEED)
+    np.random.shuffle(DeepChess_test_B)
 
     # Creating (1, 0) or (0, 1) pairs corresponding to input
     DeepChess_test_out = np.array([(1,0)] * (test_size // 2) +
                                 [(0,1)] * (test_size // 2))
+    np.random.seed(seed=SEED)
+    np.random.shuffle(DeepChess_test_out)
 
     dc_schedule = keras.optimizers.schedules.ExponentialDecay(
-        0.01,
-        decay_steps=100000,
-        decay_rate=0.99)
+        opt_init_rate,
+        decay_steps=epochs, ## TODO: WHAT?
+        decay_rate=opt_decay_rate)
 
     dc_decay_optimizer = keras.optimizers.SGD(learning_rate=dc_schedule)
+    optimizer= "adam"
 
     # Compiling model
     DeepChess.compile(
-        optimizer=dc_decay_optimizer,
-        loss='mean_squared_error',
+        optimizer=optimizer,
+        loss= "categorical_crossentropy",
+        metrics=['accuracy']
     )
 
     # Defining a short circuiting early stopping function
@@ -339,20 +403,55 @@ def gen_neural_chess( training_data: Tuple[npt.NDArray, npt.NDArray],
     print("Training")
     history = DeepChess.fit(
         x=[DeepChess_in_A, DeepChess_in_B], y=DeepChess_out,
-        validation_split=0.1,
-        batch_size=None,
-        epochs=100, #1000
+        validation_data=([DeepChess_test_A, DeepChess_test_B], DeepChess_test_out),
+        # validation_split=validation_split,
+        batch_size=batch_size,
+        epochs=epochs,
+        shuffle=True,
         callbacks=[early_stopping],
         use_multiprocessing=True,
         verbose=1,
     )
 
-    return DeepChess
+    return DeepChess, history
+
+def plot_loss(history: keras.callbacks.History):
+    '''
+        Plots the loss of the deepchess network
+        Parameters:
+            history: keras.callbacks.History - The history of the training
+    '''
+    plt.figure()
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+
+    plt.title('Model loss and accuracy')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.show()
+
 
 if __name__ == "__main__":
+    TRAIN_AE = 0
+    TRAIN_NC = 1
+
     #Get the data from the game files
-    validation_test, validation_test_l = getTest(N_INPUT, 40, 44)
+    print("Loading training data")
+    # validation_test, validation_test_l = getTest(N_INPUT, 40, 44)
     training_data = getTrain(N_INPUT, TOTAL_MLP, VOLUME_SIZE)
 
-    DeepChess = gen_neural_chess(training_data)
-    DeepChess.save("../model/DeepChess")
+    if TRAIN_AE:
+        print("Generate Autoencoders")
+        Pos2Vec = gen_pos_to_vec(training_data)
+        Pos2Vec.save("../model/Pos2Vec")
+
+    if TRAIN_NC:
+        print("Training Model")
+        DeepChess, history = gen_neural_chess(training_data)
+        plot_loss(history)
+        DeepChess.save("../model/DeepChess")
+
+    print("Done!")
