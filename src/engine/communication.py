@@ -3,6 +3,7 @@ import chess
 import argparse
 from movegeneration import next_move
 
+DEFAULT_DEPTH = 1
 
 def talk():
     """
@@ -78,6 +79,6 @@ def command(depth: int, board: chess.Board, msg: str):
 
 def get_depth() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--depth", default=3, help="provide an integer (default: 3)")
+    parser.add_argument("--depth", default=DEFAULT_DEPTH, help="provide an integer (default: 3)")
     args = parser.parse_args()
     return max([1, int(args.depth)])

@@ -4,6 +4,7 @@ import chess
 import argparse
 from movegeneration import next_move
 
+DEFAULT_DEPTH = 3
 
 def start():
     """

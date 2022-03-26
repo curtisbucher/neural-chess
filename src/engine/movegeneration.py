@@ -4,6 +4,9 @@ import sys
 import time
 from evaluate import evaluate_board, move_value, check_end_game
 
+# Importing Deepchess
+from deepcompare import compare_positions, MAX_POS, MIN_POS
+
 debug_info: Dict[str, Any] = {}
 
 
@@ -52,9 +55,9 @@ def minimax_root(depth: int, board: chess.Board) -> chess.Move:
     # White always wants to maximize (and black to minimize)
     # the board score according to evaluate_board()
     maximize = board.turn == chess.WHITE
-    best_move = -float("inf")
+    best_move = MIN_POS
     if not maximize:
-        best_move = float("inf")
+        best_move = MAX_POS
 
     moves = get_ordered_moves(board)
     best_move_found = moves[0]
@@ -65,15 +68,18 @@ def minimax_root(depth: int, board: chess.Board) -> chess.Move:
         # can be expensive. This should help the bot avoid a draw if it's not favorable
         # https://python-chess.readthedocs.io/en/latest/core.html#chess.Board.can_claim_draw
         if board.can_claim_draw():
-            value = 0.0
+            curr_board = MIN_POS ## TODO: SHOULD BE NUETRAL NOT NEGETIVE
         else:
-            value = minimax(depth - 1, board, -float("inf"), float("inf"), not maximize)
+            curr_board = minimax(depth - 1, board, MIN_POS, MAX_POS, not maximize)
         board.pop()
-        if maximize and value >= best_move:
-            best_move = value
+
+        c, b = compare_positions(curr_board, best_move)
+        if maximize and c >= b:
+            best_move = curr_board
             best_move_found = move
-        elif not maximize and value <= best_move:
-            best_move = value
+
+        elif not maximize and c <= b:
+            best_move = curr_board
             best_move_found = move
 
     return best_move_found
@@ -82,16 +88,18 @@ def minimax_root(depth: int, board: chess.Board) -> chess.Move:
 def minimax(
     depth: int,
     board: chess.Board,
-    alpha: float,
-    beta: float,
+    alpha: chess.Board,
+    beta: chess.Board,
     is_maximising_player: bool,
-) -> float:
+) -> chess.Board:
     """
     Core minimax logic.
     WILL BE OVERWRITTEN
     https://en.wikipedia.org/wiki/Minimax
     """
     debug_info["nodes"] += 1
+    print("depth:", depth)
+    # breakpoint()
 
     if board.is_checkmate():
         # The previous move resulted in checkmate
@@ -102,45 +110,63 @@ def minimax(
         return 0
 
     if depth == 0:
-        return evaluate_board(board)
+        return board
 
     if is_maximising_player:
-        best_move = -float("inf")
+        # best_move = -float("inf")
         moves = get_ordered_moves(board)
+        print("moves:", len(moves))
         for move in moves:
+            if(depth==2):
+                print("#", end="", flush=True)
             board.push(move)
-            curr_move = minimax(depth - 1, board, alpha, beta, not is_maximising_player)
-            # Each ply after a checkmate is slower, so they get ranked slightly less
-            # We want the fastest mate!
-            if curr_move > MATE_THRESHOLD:
-                curr_move -= 1
-            elif curr_move < -MATE_THRESHOLD:
-                curr_move += 1
-            best_move = max(
-                best_move,
-                curr_move,
-            )
+            curr_board = minimax(depth - 1, board, alpha, beta, not is_maximising_player)
+            # # Each ply after a checkmate is slower, so they get ranked slightly less
+            # # We want the fastest mate!
+            # if curr_move > MATE_THRESHOLD:
+            #     curr_move -= 1
+            # elif curr_move < -MATE_THRESHOLD:
+            #     curr_move += 1
+            # best_move = max(
+            #     best_move,
+            #     curr_move,
+            # )
+            # alpha = max(beta, best_move)
+            a, b = compare_positions(alpha, curr_board)
+            if b > a:
+                alpha = curr_board
             board.pop()
-            alpha = max(alpha, best_move)
-            if beta <= alpha:
-                return best_move
-        return best_move
+
+            # if beta <= alpha:
+            #     return best_move
+            a, b = compare_positions(alpha, beta)
+            if b <= a:
+                return curr_board
+
+        return curr_board
     else:
-        best_move = float("inf")
         moves = get_ordered_moves(board)
         for move in moves:
             board.push(move)
-            curr_move = minimax(depth - 1, board, alpha, beta, not is_maximising_player)
-            if curr_move > MATE_THRESHOLD:
-                curr_move -= 1
-            elif curr_move < -MATE_THRESHOLD:
-                curr_move += 1
-            best_move = min(
-                best_move,
-                curr_move,
-            )
+            curr_board = minimax(depth - 1, board, alpha, beta, not is_maximising_player)
+            # if curr_move > MATE_THRESHOLD:
+            #     curr_move -= 1
+            # elif curr_move < -MATE_THRESHOLD:
+            #     curr_move += 1
+            # best_move = min(
+            #     best_move,
+            #     curr_move,
+            # )
+
+            # beta = min(beta, best_move)
+            a, b = compare_positions(curr_board, beta)
+            if a < b:
+                beta = curr_board
             board.pop()
-            beta = min(beta, best_move)
-            if beta <= alpha:
-                return best_move
-        return best_move
+
+            # if beta <= alpha:
+            #     return best_move
+            a, b = compare_positions(alpha, beta)
+            if b <= a:
+                return curr_board
+        return curr_board
