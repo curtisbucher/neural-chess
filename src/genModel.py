@@ -271,31 +271,19 @@ def gen_pos_to_vec( training_data: Tuple[npt.NDArray, npt.NDArray],
 
     return Pos2Vec_A
 
-def gen_neural_chess(   training_data: Tuple[npt.NDArray, npt.NDArray],
-                        train_size: int = TOTAL_MLP,
-                        validation_split: float = TRAIN_TEST_RATIO,
-                        batch_size: int = BS_MLP,
-                        epochs: int= EPOCHS_MLP,
-                        opt_init_rate: float = RATE_MLP,
-                        opt_decay_rate: float = DECAY_MLP,
-                        structure: typing.List[int]=[HIDDEN_1, HIDDEN_2, HIDDEN_3, HIDDEN_4],
+def gen_neural_chess(structure: typing.List[int]=[HIDDEN_1, HIDDEN_2, HIDDEN_3, HIDDEN_4],
                     ) -> keras.Model:
     '''
-        Generates and trains the deepchess network
+        Generates the deepchess network
         Parameters:
-            training_data: Tuple[npt.NDArray, npt.NDArray] - The training data
-            train_size: int - The size of the training data
-            validation_split: float - The percentage of the training data to be used for validation
-            batch_size: int - The batch size
             epochs: int - The number of epochs
             opt_init_rate: float - The initial learning rate
             opt_decay_rate: float - The decay rate
             structure: List[int] - The structure of the network
         Returns:
             keras.Model - The trained deepchess network
-            history: keras.callbacks.History - The history of the training
     '''
-    whiteWins, blackWins = training_data
+
     Pos2Vec: keras.Model = keras.models.load_model("../model/Pos2Vec")
 
     A_in = keras.layers.Input(shape=(769,))
@@ -327,9 +315,53 @@ def gen_neural_chess(   training_data: Tuple[npt.NDArray, npt.NDArray],
         inputs=[Pos2Vec_A.input, Pos2Vec_B.input],
         outputs=[deepchess_out])
 
+    return DeepChess
+
+def train_deepchess(training_data: Tuple[npt.NDArray, npt.NDArray],
+                    filepath: str = DC_AUTOSAVE_PATH,
+                    load_last: bool = True,
+                    opt_init_rate: float = RATE_MLP,
+                    opt_decay_rate: float = DECAY_MLP,
+                    train_size: int = TOTAL_MLP,
+                    validation_split: float = TRAIN_TEST_RATIO,
+                    batch_size: int = BS_MLP,
+                    epochs: int= EPOCHS_MLP
+                    ) -> Tuple[keras.Model, keras.callbacks.History]:
+    '''
+        Trains the deepchess network
+        Parameters:
+            training_data:      Tuple[npt.NDArray, npt.NDArray] - The training data
+            filepath:           str - The path to the file to load the data from
+            load_last:          bool - Whether to load the last saved model
+            train_size:         int - The size of the training data
+            validation_split:   float - The percentage of the training data to be used for validation
+            batch_size:         int - The batch size
+            epochs:             int - The number of epochs
+
+        Returns:
+            keras.Model - The trained deepchess network
+            history: keras.callbacks.History - The history of the training
+    '''
+    if load_last:
+        DeepChess = keras.models.load_model(filepath)
+    else:
+        DeepChess = gen_neural_chess(training_data)
+
+    # Defining a short circuiting early stopping function
+    early_stopping = keras.callbacks.EarlyStopping(
+        patience=10,
+        min_delta=0.0001,
+        restore_best_weights=True,
+    )
+
+    # Callback for saving model after each epoch
+    checkpoint = ModelCheckpoint(DC_AUTOSAVE_PATH, monitor='val_accuracy', verbose=1,
+                                    save_best_only=True, mode='auto', period=1)
+
     # whiteWins, blackWins
     print("Generating random sample")
 
+    whiteWins, blackWins = training_data
     ## Generating training data
     # sampling white wins and losses (black wins)
     white_w_train = whiteWins[np.random.randint(whiteWins.shape[0], size=train_size), :]
@@ -350,7 +382,6 @@ def gen_neural_chess(   training_data: Tuple[npt.NDArray, npt.NDArray],
         opt_init_rate,
         decay_steps=epochs, ## TODO: WHAT?
         decay_rate=opt_decay_rate)
-
     dc_decay_optimizer = keras.optimizers.SGD(learning_rate=dc_schedule)
     optimizer= "adam"
 
@@ -361,21 +392,9 @@ def gen_neural_chess(   training_data: Tuple[npt.NDArray, npt.NDArray],
         metrics=['accuracy']
     )
 
-    # Defining a short circuiting early stopping function
-    early_stopping = keras.callbacks.EarlyStopping(
-        patience=10,
-        min_delta=0.0001,
-        restore_best_weights=True,
-    )
-
-    # Callback for saving model after each epoch
-    checkpoint = ModelCheckpoint(DC_AUTOSAVE_PATH, monitor='val_accuracy', verbose=1,
-                                    save_best_only=True, mode='auto', period=1)
-
     print("Training")
     history = DeepChess.fit(
         x=[DeepChess_in_A, DeepChess_in_B], y=DeepChess_out,
-        # validation_data=([DeepChess_test_A, DeepChess_test_B], DeepChess_test_out),
         validation_split=validation_split,
         batch_size=batch_size,
         epochs=epochs,
@@ -405,7 +424,6 @@ def plot_loss(history: keras.callbacks.History):
     plt.legend(['Train', 'Test'], loc='upper left')
     plt.show()
 
-
 if __name__ == "__main__":
     TRAIN_AE = 0
     TRAIN_NC = 1
@@ -428,7 +446,7 @@ if __name__ == "__main__":
 
     if TRAIN_NC:
         print("Training Model")
-        DeepChess, history = gen_neural_chess(training_data)
+        DeepChess, history = train_deepchess(training_data)
         plot_loss(history)
         DeepChess.save(DC_EXPORT_PATH)
 
