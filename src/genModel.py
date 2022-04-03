@@ -4,6 +4,7 @@ import numpy as np
 from tensorflow import keras
 from keras import layers
 from keras.layers import concatenate
+from keras.callbacks import ModelCheckpoint
 
 # For reletive imports
 import sys
@@ -21,6 +22,8 @@ import pydotplus
 from keras.utils.vis_utils import plot_model
 pydot = pydotplus
 
+import argparse
+
 # Set Matplotlib defaults
 plt.style.use('seaborn-whitegrid')
 plt.rc('figure', autolayout=True)
@@ -37,8 +40,8 @@ TRAIN_TEST_RATIO = 0.1
 
 BS_AE = 20
 BS_MLP = 50
-EPOCHS_AE = 1 #5
-EPOCHS_MLP = 15 #201
+EPOCHS_AE = 20 #50
+EPOCHS_MLP = 201
 RATE_AE = 0.005
 DECAY_AE = 0.98
 RATE_MLP = 0.005
@@ -62,7 +65,9 @@ VOLUME_SIZE = 25000
 
 SEED = 0
 
-export_path = '../model'
+DC_EXPORT_PATH = "../model/DeepChess"
+DC_AUTOSAVE_PATH = "../model/DeepChess_Autosave"
+AE_EXPORT_PATH = "../model/P2V"
 
 def gen_pos_to_vec( training_data: Tuple[npt.NDArray, npt.NDArray],
                     train_size: int = TOTAL_AE,
@@ -126,6 +131,8 @@ def gen_pos_to_vec( training_data: Tuple[npt.NDArray, npt.NDArray],
     black_sample = blackWins[np.random.randint(blackWins.shape[0], size=train_size), :]
 
     autoencoder_train = np.concatenate([white_sample, black_sample])
+
+    del white_sample, black_sample
 
     print("Training")
     history = Pos2Vec.fit(
@@ -308,21 +315,6 @@ def gen_neural_chess(   training_data: Tuple[npt.NDArray, npt.NDArray],
     Pos2Vec_B = keras.models.Model(inputs=B_in, outputs=B)
     Pos2Vec_B.set_weights(Pos2Vec.get_weights())
 
-    test_size = int(train_size * validation_split)
-    # # Duplicating siamese Pos2Vec with tied weights
-    # la0, la1, la2, la3 = Pos2Vec_A.layers
-
-    # Pos2Vec_B_in = keras.layers.Input(shape=(769,))
-    # lb0 = la0(Pos2Vec_B_in)
-    # lb1 = la1(lb0)
-    # lb2 = la2(lb1)
-    # lb3 = la3(lb2)
-
-    # Pos2Vec_B = keras.Model(inputs=Pos2Vec_B_in, outputs=lb3)
-
-    # Pos2Vec_A.summary()
-    # Pos2Vec_B.summary()
-
     # Creating DeepChess layers to compare pos2vec
     twin_p2v_in = concatenate([Pos2Vec_A.output, Pos2Vec_B.output])
     l0 = layers.Dense(structure[1], activation="relu")(twin_p2v_in)
@@ -345,38 +337,14 @@ def gen_neural_chess(   training_data: Tuple[npt.NDArray, npt.NDArray],
 
     # Creating (W, L) or (L, W) pairs
     DeepChess_in_A = np.concatenate((white_w_train[:train_size // 2], white_l_train[:train_size // 2]))
-    np.random.seed(seed=SEED)
-    np.random.shuffle(DeepChess_in_A)
 
     DeepChess_in_B = np.concatenate((white_l_train[train_size // 2:], white_w_train[train_size // 2:]))
-    np.random.seed(seed=SEED)
-    np.random.shuffle(DeepChess_in_B)
+
+    del white_w_train, white_l_train
 
     # Creating (1, 0) or (0, 1) pairs corresponding to input
     DeepChess_out = np.array([(1,0)] * (train_size // 2) +
                                 [(0,1)] * (train_size // 2))
-    np.random.seed(seed=SEED)
-    np.random.shuffle(DeepChess_out)
-
-    ## Generating testing data
-    # sampling white wins and losses (black wins)
-    white_w_test = whiteWins[np.random.randint(whiteWins.shape[0], size=test_size), :]
-    white_l_test = blackWins[np.random.randint(blackWins.shape[0], size=test_size), :]
-
-    # Creating (W, L) or (L, W) pairs
-    DeepChess_test_A = np.concatenate((white_w_test[:test_size // 2], white_l_test[:test_size // 2]))
-    np.random.seed(seed=SEED)
-    np.random.shuffle(DeepChess_test_A)
-
-    DeepChess_test_B = np.concatenate((white_l_test[test_size // 2:], white_w_test[test_size // 2:]))
-    np.random.seed(seed=SEED)
-    np.random.shuffle(DeepChess_test_B)
-
-    # Creating (1, 0) or (0, 1) pairs corresponding to input
-    DeepChess_test_out = np.array([(1,0)] * (test_size // 2) +
-                                [(0,1)] * (test_size // 2))
-    np.random.seed(seed=SEED)
-    np.random.shuffle(DeepChess_test_out)
 
     dc_schedule = keras.optimizers.schedules.ExponentialDecay(
         opt_init_rate,
@@ -395,20 +363,24 @@ def gen_neural_chess(   training_data: Tuple[npt.NDArray, npt.NDArray],
 
     # Defining a short circuiting early stopping function
     early_stopping = keras.callbacks.EarlyStopping(
-        patience=500,
+        patience=10,
         min_delta=0.0001,
         restore_best_weights=True,
     )
 
+    # Callback for saving model after each epoch
+    checkpoint = ModelCheckpoint(DC_AUTOSAVE_PATH, monitor='val_accuracy', verbose=1,
+                                    save_best_only=True, mode='auto', period=1)
+
     print("Training")
     history = DeepChess.fit(
         x=[DeepChess_in_A, DeepChess_in_B], y=DeepChess_out,
-        validation_data=([DeepChess_test_A, DeepChess_test_B], DeepChess_test_out),
-        # validation_split=validation_split,
+        # validation_data=([DeepChess_test_A, DeepChess_test_B], DeepChess_test_out),
+        validation_split=validation_split,
         batch_size=batch_size,
         epochs=epochs,
         shuffle=True,
-        callbacks=[early_stopping],
+        callbacks=[early_stopping, checkpoint],
         use_multiprocessing=True,
         verbose=1,
     )
@@ -438,6 +410,12 @@ if __name__ == "__main__":
     TRAIN_AE = 0
     TRAIN_NC = 1
 
+    # TODO
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("--depth", default=DEFAULT_DEPTH, help="provide an integer (default: 3)")
+    # args = parser.parse_args()
+    # return max([1, int(args.depth)])
+
     #Get the data from the game files
     print("Loading training data")
     # validation_test, validation_test_l = getTest(N_INPUT, 40, 44)
@@ -446,12 +424,12 @@ if __name__ == "__main__":
     if TRAIN_AE:
         print("Generate Autoencoders")
         Pos2Vec = gen_pos_to_vec(training_data)
-        Pos2Vec.save("../model/Pos2Vec")
+        Pos2Vec.save(AE_EXPORT_PATH)
 
     if TRAIN_NC:
         print("Training Model")
         DeepChess, history = gen_neural_chess(training_data)
         plot_loss(history)
-        DeepChess.save("../model/DeepChess")
+        DeepChess.save(DC_EXPORT_PATH)
 
     print("Done!")

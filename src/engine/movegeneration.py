@@ -5,7 +5,11 @@ import time
 from evaluate import evaluate_board, move_value, check_end_game
 
 # Importing Deepchess
+import deepcompare
 from deepcompare import compare_positions, MAX_POS, MIN_POS
+
+# progress bar
+from tqdm import tqdm
 
 debug_info: Dict[str, Any] = {}
 
@@ -62,7 +66,7 @@ def minimax_root(depth: int, board: chess.Board) -> chess.Move:
     moves = get_ordered_moves(board)
     best_move_found = moves[0]
 
-    for move in moves:
+    for move in tqdm(moves):
         board.push(move)
         # Checking if draw can be claimed at this level, because the threefold repetition check
         # can be expensive. This should help the bot avoid a draw if it's not favorable
@@ -98,7 +102,7 @@ def minimax(
     https://en.wikipedia.org/wiki/Minimax
     """
     debug_info["nodes"] += 1
-    print("depth:", depth)
+    # print("depth:", depth)
     # breakpoint()
 
     if board.is_checkmate():
@@ -115,10 +119,7 @@ def minimax(
     if is_maximising_player:
         # best_move = -float("inf")
         moves = get_ordered_moves(board)
-        print("moves:", len(moves))
         for move in moves:
-            if(depth==2):
-                print("#", end="", flush=True)
             board.push(move)
             curr_board = minimax(depth - 1, board, alpha, beta, not is_maximising_player)
             # # Each ply after a checkmate is slower, so they get ranked slightly less
