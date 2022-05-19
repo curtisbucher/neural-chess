@@ -1,0 +1,16 @@
+add tests
+integratioin and unit (pytest)
+
+undercore filenames, vars, functions PEP 8
+
+consider using less parameters to constants
+
+remove print statments => use logging module (look at docs)
+
+add argument parser
+
+fix reletive imports
+
+checkout typing.io
+
+look into type annotations

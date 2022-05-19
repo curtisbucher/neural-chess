@@ -318,7 +318,7 @@ def gen_neural_chess(structure: typing.List[int]=[HIDDEN_1, HIDDEN_2, HIDDEN_3, 
     return DeepChess
 
 def train_deepchess(training_data: Tuple[npt.NDArray, npt.NDArray],
-                    filepath: str = DC_AUTOSAVE_PATH,
+                    filepath: str = DC_EXPORT_PATH,
                     load_last: bool = True,
                     opt_init_rate: float = RATE_MLP,
                     opt_decay_rate: float = DECAY_MLP,
@@ -425,14 +425,14 @@ def plot_loss(history: keras.callbacks.History):
     plt.show()
 
 if __name__ == "__main__":
-    TRAIN_AE = 0
+    TRAIN_AE = 1
     TRAIN_NC = 1
 
-    # TODO
     # parser = argparse.ArgumentParser()
+    # parser.add_argument("--train_ae", default=TRAIN_AE, help="Whether to train the autoencoders")
+    # parser.add_argument("--train_nc", default=TRAIN_NC, help="provide an integer (default: 3)")
     # parser.add_argument("--depth", default=DEFAULT_DEPTH, help="provide an integer (default: 3)")
     # args = parser.parse_args()
-    # return max([1, int(args.depth)])
 
     #Get the data from the game files
     print("Loading training data")

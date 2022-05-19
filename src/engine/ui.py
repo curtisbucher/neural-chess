@@ -2,7 +2,7 @@
 
 import chess
 import argparse
-from movegeneration import next_move
+from movegeneration import next_move #TODO: Relative imports
 
 DEFAULT_DEPTH = 3
 

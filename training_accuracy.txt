@@ -1,0 +1,241 @@
+(tf) CurtisMacBookPro:neural-chess curtisbucher$ cd src/
+(tf) CurtisMacBookPro:src curtisbucher$ /Users/curtisbucher/miniforge3/envs/tf/bin/python /Users/curtisbucher/Desktop/Programs/neural-chess/src/genModel.py
+/Users/curtisbucher/Desktop/Programs/neural-chess/src/genModel.py:2: MatplotlibDeprecationWarning:
+The matplotlib.blocking_input module was deprecated in Matplotlib 3.5 and will be removed two minor releases later.
+  from matplotlib import blocking_input
+Loading training data
+Loading batch number 0
+Loading batch number 1
+Loading batch number 2
+Loading batch number 3
+Loading batch number 4
+Loading batch number 5
+Loading batch number 6
+Loading batch number 7
+Loading batch number 8
+Loading batch number 9
+Loading batch number 10
+Loading batch number 11
+Loading batch number 12
+Loading batch number 13
+Loading batch number 14
+Loading batch number 15
+Loading batch number 16
+Loading batch number 17
+Loading batch number 18
+Loading batch number 19
+Loading batch number 20
+Loading batch number 21
+Loading batch number 22
+Loading batch number 23
+Loading batch number 24
+Loading batch number 25
+Loading batch number 26
+Loading batch number 27
+Loading batch number 28
+Loading batch number 29
+Generate Autoencoders
+Generating and training siamese autoencoders
+Metal device set to: Apple M1 Pro
+
+systemMemory: 16.00 GB
+maxCacheSize: 5.33 GB
+
+2022-05-18 11:25:11.377310: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:305] Could not identify NUMA node of platform GPU ID 0, defaulting to 0. Your kernel may not have been built with NUMA support.
+2022-05-18 11:25:11.377493: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:271] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 0 MB memory) -> physical PluggableDevice (device: 0, name: METAL, pci bus id: <undefined>)
+Generating random train
+Training
+2022-05-18 11:25:18.931058: W tensorflow/core/platform/profile_utils/cpu_utils.cc:128] Failed to get CPU frequency: 0 Hz
+Epoch 1/20
+2022-05-18 11:25:19.094527: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:112] Plugin optimizer for device_type GPU is enabled.
+22499/22500 [============================>.] - ETA: 0s - loss: 0.00472022-05-18 11:26:57.703233: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:112] Plugin optimizer for device_type GPU is enabled.
+22500/22500 [==============================] - 103s 5ms/step - loss: 0.0047 - val_loss: 0.0026
+Epoch 2/20
+22500/22500 [==============================] - 103s 5ms/step - loss: 0.0022 - val_loss: 0.0019
+Epoch 3/20
+22500/22500 [==============================] - 101s 4ms/step - loss: 0.0017 - val_loss: 0.0016
+Epoch 4/20
+22500/22500 [==============================] - 103s 5ms/step - loss: 0.0016 - val_loss: 0.0015
+Epoch 5/20
+22500/22500 [==============================] - 101s 5ms/step - loss: 0.0015 - val_loss: 0.0014
+Epoch 6/20
+22500/22500 [==============================] - 161s 7ms/step - loss: 0.0014 - val_loss: 0.0013
+Epoch 7/20
+22500/22500 [==============================] - 1868s 83ms/step - loss: 0.0013 - val_loss: 0.0013
+Epoch 8/20
+22500/22500 [==============================] - 343s 15ms/step - loss: 0.0013 - val_loss: 0.0013
+Epoch 9/20
+22500/22500 [==============================] - 171s 8ms/step - loss: 0.0013 - val_loss: 0.0013
+Epoch 10/20
+22500/22500 [==============================] - 133s 6ms/step - loss: 0.0013 - val_loss: 0.0013
+Epoch 11/20
+22500/22500 [==============================] - 802s 36ms/step - loss: 0.0013 - val_loss: 0.0013
+Epoch 12/20
+22500/22500 [==============================] - 369s 16ms/step - loss: 0.0013 - val_loss: 0.0013
+Epoch 13/20
+22500/22500 [==============================] - 1581s 70ms/step - loss: 0.0013 - val_loss: 0.0013
+Epoch 14/20
+22500/22500 [==============================] - 102s 5ms/step - loss: 0.0013 - val_loss: 0.0013
+Epoch 15/20
+22500/22500 [==============================] - 104s 5ms/step - loss: 0.0013 - val_loss: 0.0013
+Epoch 16/20
+22500/22500 [==============================] - 106s 5ms/step - loss: 0.0013 - val_loss: 0.0013
+Epoch 17/20
+22500/22500 [==============================] - 106s 5ms/step - loss: 0.0013 - val_loss: 0.0013
+Epoch 18/20
+22500/22500 [==============================] - 111s 5ms/step - loss: 0.0013 - val_loss: 0.0013
+Epoch 19/20
+22500/22500 [==============================] - 108s 5ms/step - loss: 0.0013 - val_loss: 0.0013
+Epoch 20/20
+22500/22500 [==============================] - 109s 5ms/step - loss: 0.0013 - val_loss: 0.0013
+Training
+Epoch 1/20
+2022-05-18 13:16:47.918214: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:112] Plugin optimizer for device_type GPU is enabled.
+14058/14063 [============================>.] - ETA: 0s - loss: 0.01302022-05-18 13:18:15.451389: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:112] Plugin optimizer for device_type GPU is enabled.
+14063/14063 [==============================] - 93s 7ms/step - loss: 0.0130 - val_loss: 0.0124
+Epoch 2/20
+14063/14063 [==============================] - 92s 7ms/step - loss: 0.0123 - val_loss: 0.0122
+Epoch 3/20
+14063/14063 [==============================] - 92s 7ms/step - loss: 0.0122 - val_loss: 0.0122
+Epoch 4/20
+14063/14063 [==============================] - 94s 7ms/step - loss: 0.0122 - val_loss: 0.0123
+Epoch 5/20
+14063/14063 [==============================] - 92s 7ms/step - loss: 0.0122 - val_loss: 0.0124
+Epoch 6/20
+14063/14063 [==============================] - 93s 7ms/step - loss: 0.0122 - val_loss: 0.0122
+Epoch 7/20
+14063/14063 [==============================] - 93s 7ms/step - loss: 0.0121 - val_loss: 0.0121
+Epoch 8/20
+14063/14063 [==============================] - 92s 7ms/step - loss: 0.0121 - val_loss: 0.0123
+Epoch 9/20
+14063/14063 [==============================] - 91s 6ms/step - loss: 0.0120 - val_loss: 0.0121
+Epoch 10/20
+14063/14063 [==============================] - 92s 7ms/step - loss: 0.0120 - val_loss: 0.0122
+Epoch 11/20
+14063/14063 [==============================] - 93s 7ms/step - loss: 0.0120 - val_loss: 0.0119
+Epoch 12/20
+14063/14063 [==============================] - 93s 7ms/step - loss: 0.0120 - val_loss: 0.0120
+Epoch 13/20
+14063/14063 [==============================] - 90s 6ms/step - loss: 0.0120 - val_loss: 0.0119
+Epoch 14/20
+14063/14063 [==============================] - 90s 6ms/step - loss: 0.0120 - val_loss: 0.0121
+Epoch 15/20
+14063/14063 [==============================] - 90s 6ms/step - loss: 0.0120 - val_loss: 0.0121
+Epoch 16/20
+14063/14063 [==============================] - 90s 6ms/step - loss: 0.0120 - val_loss: 0.0119
+Epoch 17/20
+14063/14063 [==============================] - 90s 6ms/step - loss: 0.0120 - val_loss: 0.0121
+Epoch 18/20
+14063/14063 [==============================] - 94s 7ms/step - loss: 0.0120 - val_loss: 0.0119
+Epoch 19/20
+14063/14063 [==============================] - 90s 6ms/step - loss: 0.0120 - val_loss: 0.0120
+Epoch 20/20
+14063/14063 [==============================] - 89s 6ms/step - loss: 0.0120 - val_loss: 0.0119
+Training
+Epoch 1/20
+2022-05-18 13:47:25.523543: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:112] Plugin optimizer for device_type GPU is enabled.
+14063/14063 [==============================] - ETA: 0s - loss: 0.02762022-05-18 13:48:54.870444: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:112] Plugin optimizer for device_type GPU is enabled.
+14063/14063 [==============================] - 94s 7ms/step - loss: 0.0276 - val_loss: 0.0272
+Epoch 2/20
+14063/14063 [==============================] - 89s 6ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 3/20
+14063/14063 [==============================] - 89s 6ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 4/20
+14063/14063 [==============================] - 87s 6ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 5/20
+14063/14063 [==============================] - 87s 6ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 6/20
+14063/14063 [==============================] - 90s 6ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 7/20
+14063/14063 [==============================] - 90s 6ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 8/20
+14063/14063 [==============================] - 90s 6ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 9/20
+14063/14063 [==============================] - 90s 6ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 10/20
+14063/14063 [==============================] - 90s 6ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 11/20
+14063/14063 [==============================] - 89s 6ms/step - loss: 0.0275 - val_loss: 0.0272
+Training
+Epoch 1/20
+2022-05-18 14:03:54.551701: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:112] Plugin optimizer for device_type GPU is enabled.
+14063/14063 [==============================] - ETA: 0s - loss: 0.02752022-05-18 14:05:29.365210: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:112] Plugin optimizer for device_type GPU is enabled.
+14063/14063 [==============================] - 101s 7ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 2/20
+14063/14063 [==============================] - 101s 7ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 3/20
+14063/14063 [==============================] - 101s 7ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 4/20
+14063/14063 [==============================] - 101s 7ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 5/20
+14063/14063 [==============================] - 101s 7ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 6/20
+14063/14063 [==============================] - 101s 7ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 7/20
+14063/14063 [==============================] - 100s 7ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 8/20
+14063/14063 [==============================] - 101s 7ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 9/20
+14063/14063 [==============================] - 101s 7ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 10/20
+14063/14063 [==============================] - 101s 7ms/step - loss: 0.0275 - val_loss: 0.0272
+Epoch 11/20
+14063/14063 [==============================] - 101s 7ms/step - loss: 0.0275 - val_loss: 0.0272
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+2022-05-18 14:22:24.254203: W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
+Training Model
+WARNING:tensorflow:`period` argument is deprecated. Please use `save_freq` to specify the frequency in number of batches seen.
+Generating random sample
+Training
+Epoch 1/201
+2022-05-18 14:22:43.360654: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:112] Plugin optimizer for device_type GPU is enabled.
+13496/13500 [============================>.] - ETA: 0s - loss: 0.1837 - accuracy: 0.91812022-05-18 14:25:24.424578: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:112] Plugin optimizer for device_type GPU is enabled.
+
+Epoch 00001: val_accuracy improved from -inf to 0.89263, saving model to ../model/DeepChess_Autosave
+13500/13500 [==============================] - 171s 13ms/step - loss: 0.1837 - accuracy: 0.9181 - val_loss: 0.2313 - val_accuracy: 0.8926
+Epoch 2/201
+13496/13500 [============================>.] - ETA: 0s - loss: 0.1365 - accuracy: 0.9397
+Epoch 00002: val_accuracy improved from 0.89263 to 0.90808, saving model to ../model/DeepChess_Autosave
+13500/13500 [==============================] - 162s 12ms/step - loss: 0.1365 - accuracy: 0.9397 - val_loss: 0.2032 - val_accuracy: 0.9081
+Epoch 3/201
+13499/13500 [============================>.] - ETA: 0s - loss: 0.1099 - accuracy: 0.9511
+Epoch 00003: val_accuracy did not improve from 0.90808
+13500/13500 [==============================] - 162s 12ms/step - loss: 0.1099 - accuracy: 0.9511 - val_loss: 0.2080 - val_accuracy: 0.9066
+Epoch 4/201
+13498/13500 [============================>.] - ETA: 0s - loss: 0.0931 - accuracy: 0.9587
+Epoch 00004: val_accuracy improved from 0.90808 to 0.91427, saving model to ../model/DeepChess_Autosave
+13500/13500 [==============================] - 162s 12ms/step - loss: 0.0931 - accuracy: 0.9587 - val_loss: 0.2358 - val_accuracy: 0.9143
+Epoch 5/201
+13497/13500 [============================>.] - ETA: 0s - loss: 0.0819 - accuracy: 0.9640
+Epoch 00005: val_accuracy did not improve from 0.91427
+13500/13500 [==============================] - 161s 12ms/step - loss: 0.0819 - accuracy: 0.9640 - val_loss: 0.2561 - val_accuracy: 0.8980
+Epoch 6/201
+13499/13500 [============================>.] - ETA: 0s - loss: 0.0745 - accuracy: 0.9673
+Epoch 00006: val_accuracy did not improve from 0.91427
+13500/13500 [==============================] - 163s 12ms/step - loss: 0.0745 - accuracy: 0.9673 - val_loss: 0.2326 - val_accuracy: 0.9082
+Epoch 7/201
+13496/13500 [============================>.] - ETA: 0s - loss: 0.0677 - accuracy: 0.9703
+Epoch 00007: val_accuracy did not improve from 0.91427
+13500/13500 [==============================] - 164s 12ms/step - loss: 0.0677 - accuracy: 0.9703 - val_loss: 0.2899 - val_accuracy: 0.9071
+Epoch 8/201
+13498/13500 [============================>.] - ETA: 0s - loss: 0.0633 - accuracy: 0.9723
+Epoch 00008: val_accuracy did not improve from 0.91427
+13500/13500 [==============================] - 164s 12ms/step - loss: 0.0633 - accuracy: 0.9723 - val_loss: 0.3184 - val_accuracy: 0.8988
+Epoch 9/201
+13500/13500 [==============================] - ETA: 0s - loss: 0.0583 - accuracy: 0.9744
+Epoch 00009: val_accuracy improved from 0.91427 to 0.91568, saving model to ../model/DeepChess_Autosave
+13500/13500 [==============================] - 163s 12ms/step - loss: 0.0583 - accuracy: 0.9744 - val_loss: 0.2692 - val_accuracy: 0.9157
+Epoch 10/201
+13499/13500 [============================>.] - ETA: 0s - loss: 0.0550 - accuracy: 0.9759
+Epoch 00010: val_accuracy did not improve from 0.91568
+13500/13500 [==============================] - 161s 12ms/step - loss: 0.0550 - accuracy: 0.9759 - val_loss: 0.2551 - val_accuracy: 0.9059
+Epoch 11/201
+13496/13500 [============================>.] - ETA: 0s - loss: 0.0516 - accuracy: 0.9775
+Epoch 00011: val_accuracy did not improve from 0.91568
+13500/13500 [==============================] - 162s 12ms/step - loss: 0.0516 - accuracy: 0.9775 - val_loss: 0.3073 - val_accuracy: 0.9117
+Epoch 12/201
+13498/13500 [============================>.] - ETA: 0s - loss: 0.0511 - accuracy: 0.9781
+Epoch 00012: val_accuracy did not improve from 0.91568
+13500/13500 [==============================] - 162s 12ms/step - loss: 0.0511 - accuracy: 0.9781 - val_loss: 0.3994 - val_accuracy: 0.9071
+/Users/curtisbucher/Desktop/Programs/neural-chess/src/genModel.py:425: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  plt.show()
